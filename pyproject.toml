@@ -1,3 +1,25 @@
+[tool.poetry]
+name = "ci-exercises"
+version = "0.1.0"
+description = "Continuous Integration exercises with C++ and Python components"
+authors = ["me <your-email@example-uni.edu>"]
+readme = "README.md"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry.dependencies]
-python = "^3.8"
-pytest = "^7.0"  # Or the latest version
+python = "^3.8.1"
+pytest = "^7.0"
+flake8 = "^6.0"
+coverage = "^7.0"
+pytest-cov = "^4.0"
+
+[tool.poetry.group.dev.dependencies]
+poetry = "^1.0"
+
+[tool.poetry.scripts]
+build-cpp = "scripts.build:build_cpp"
+test-cpp = "scripts.build:test_cpp"
+test-all = "scripts.build:test_all"
