@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Continuous Integration exercises with C++ and Python components"
 authors = ["me <your-email@example-uni.edu>"]
 readme = "README.md"
+packages = [{include = "src"}]
 
 [build-system]
 requires = ["poetry-core"]
@@ -17,9 +18,13 @@ coverage = "^7.0"
 pytest-cov = "^4.0"
 
 [tool.poetry.group.dev.dependencies]
-poetry = "^1.0"
+black = "^23.0"
 
 [tool.poetry.scripts]
 build-cpp = "scripts.build:build_cpp"
 test-cpp = "scripts.build:test_cpp"
 test-all = "scripts.build:test_all"
+
+[tool.black]
+line-length = 80
+target-version = ['py38']
