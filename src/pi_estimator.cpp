@@ -15,5 +15,5 @@ double estimate_pi(int num_points) {
             points_inside_circle++;
         }
     }
-    return 3.0 * static_cast<double>(points_inside_circle) / num_points;
+    return 4.0 * static_cast<double>(points_inside_circle) / num_points;
 }
