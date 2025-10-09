@@ -1,0 +1,110 @@
+name: C++ CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  cpp-build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [Debug, Release]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            sudo apt-get install -y clang
+          fi
+      
+      - name: Setup compiler
+        run: |
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            echo "CC=clang" >> $GITHUB_ENV
+            echo "CXX=clang++" >> $GITHUB_ENV
+          else
+            echo "CC=gcc" >> $GITHUB_ENV
+            echo "CXX=g++" >> $GITHUB_ENV
+          fi
+      
+      - name: Configure CMake
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      
+      - name: Build C++ project
+        run: |
+          cmake --build build --config ${{ matrix.build_type }}
+      
+      - name: Run C++ tests
+        run: |
+          cd build
+          ctest --output-on-failure --verbose
+
+  # This check job is outcommented, because it might be
+  # confusing to interpret: It might return 0 errors and
+  # still fail, because a test might fail.
+  # Also, familarity with valgrind is needed to
+  # understand the output.
+  #
+  # cpp-memory-check:
+  #   runs-on: ubuntu-latest
+  #   needs: cpp-build-and-test
+  #   
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #     
+  #     - name: Install dependencies
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y cmake build-essential valgrind
+  #     
+  #     - name: Configure CMake (Debug)
+  #       run: |
+  #         cmake -B build -DCMAKE_BUILD_TYPE=Debug
+  #     
+  #     - name: Build C++ project
+  #       run: |
+  #         cmake --build build --config Debug
+  #     
+  #     - name: Run memory check with Valgrind  
+  #       run: |
+  #         cd build
+  #         # Run tests with valgrind through ctest
+  #         CTEST_OUTPUT_ON_FAILURE=1 valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1 ctest --verbose
+
+  cpp-static-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential cppcheck
+      
+      - name: Run static analysis with cppcheck
+        run: |
+          cppcheck --enable=all --std=c++14 --verbose --error-exitcode=1 src/ tests/ || true
+      
+      - name: Configure CMake with warnings
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror"
+      
+      - name: Build with strict warnings
+        run: |
+          cmake --build build --config Debug
